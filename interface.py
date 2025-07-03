@@ -1,6 +1,10 @@
 import sys
-from PySide6 import QtCore, QtWidgets, QtGui
-from PySide6.QtWidgets import QComboBox
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtWidgets import (
+    QTableWidget, QTableWidgetItem, QLabel,
+    QVBoxLayout, QHBoxLayout, QPushButton
+)   
+from PySide6.QtGui import QGuiApplication 
 from windows import (
     AddNotaWindow,
     ConvertirPuntajeNotaWindow,
@@ -9,67 +13,126 @@ from windows import (
     CalcularPromedioFinalWindow,
     CalcularNotaNecesariaWindow
 )
+from notas import df
 
-class interface(QtWidgets.QWidget):
+
+class Interface(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowTitle("School Notes")
+        screen = QGuiApplication.primaryScreen()
+        screen_size = screen.availableGeometry()
+        self.resize(screen_size.width(), screen_size.height())
 
-        self.text = QtWidgets.QLabel("Choice an option", alignment=QtCore.Qt.AlignCenter)
-        
-        self.comboBox = QComboBox(self)
-        self.comboBox.addItem('Default')
-        self.comboBox.addItem('Añadir Nota')
-        self.comboBox.addItem('Convertir Puntaje A Nota')
-        self.comboBox.addItem('Generar Escala De Notas')
-        self.comboBox.addItem('Calcular Promedio(asignatura)')
-        self.comboBox.addItem('Calcular Promedio Final')
-        self.comboBox.addItem('Calcular Nota Necesaria')
-        self.comboBox.setFixedWidth(250) 
-        
-        self.button = QtWidgets.QPushButton("next")
-        self.button.setFixedWidth(100) 
-        self.button.clicked.connect(self.next_step)
-        
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.addStretch(1) 
-        self.layout.addWidget(self.text, alignment=QtCore.Qt.AlignCenter) 
-        self.layout.addWidget(self.comboBox, alignment=QtCore.Qt.AlignCenter)
-        self.layout.addStretch(1) 
-        self.layout.addWidget(self.button, alignment=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom)
-    
-        self.window_map = {
-            'Añadir Nota': AddNotaWindow,
-            'Convertir Puntaje A Nota': ConvertirPuntajeNotaWindow,
-            'Generar Escala De Notas': GenerarEscalaNotasWindow,
-            'Calcular Promedio(asignatura)': CalcularPromedioAsignaturaWindow,
-            'Calcular Promedio Final': CalcularPromedioFinalWindow,
-            'Calcular Nota Necesaria': CalcularNotaNecesariaWindow,
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #121212;
+                color: white;
+                font-family: 'Segoe UI', sans-serif;
+                font-size: 14px;
+            }
+            QPushButton {
+                background-color: #1e1e1e;
+                color: white;
+                border: 1px solid #2c2c2c;
+                border-radius: 6px;
+                padding: 8px 14px;
+            }
+            QPushButton:hover {
+                background-color: #2c2c2c;
+            }
+            QTableWidget {
+                background-color: #1e1e1e;
+                gridline-color: #2c2c2c;
+                border: none;
+            }
+            QHeaderView::section {
+                background-color: #2c2c2c;
+                color: white;
+                padding: 6px;
+                border: none;
+            }
+        """)
+
+        self.build_ui()
+
+    def build_ui(self):
+        menu_label = QLabel("Menu", alignment=QtCore.Qt.AlignCenter)
+        menu_label.setStyleSheet("font-size: 20px; font-weight: bold; padding: 10px;")
+
+        self.menu_layout = QVBoxLayout()
+        self.menu_layout.setSpacing(12)
+        self.menu_layout.addWidget(menu_label)
+
+        self.button_map = {
+            'Add Note': AddNotaWindow,
+            'Convert Score to Grade': ConvertirPuntajeNotaWindow,
+            'Generate Grade Scale': GenerarEscalaNotasWindow,
+            'Calculate Average (Subject)': CalcularPromedioAsignaturaWindow,
+            'Calculate Final Average': CalcularPromedioFinalWindow,
+            'Calculate Required Grade': CalcularNotaNecesariaWindow,
         }
-        
+
+        for label, constructor in self.button_map.items():
+            button = QPushButton(label)
+            button.clicked.connect(lambda checked, c=constructor, l=label: self.open_window(c, l))
+            self.menu_layout.addWidget(button)
+
+        self.menu_layout.addStretch(1)
+
+        menu_widget = QtWidgets.QWidget()
+        menu_widget.setLayout(self.menu_layout)
+        menu_widget.setFixedWidth(220)
+
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(["Subject", "Type", "Weight", "Grades"])
+        self.table.horizontalHeader().setStretchLastSection(True)
+        for i in range(0,5):
+            self.table.horizontalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeToContents)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setShowGrid(True)
+        self.populate_table()
+
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(20)
+        main_layout.addWidget(menu_widget)
+        main_layout.addWidget(self.table)
+
+        self.setLayout(main_layout)
         self.active_windows = []
-    
-    def get_option(self):
-        return self.comboBox.currentText()
-    
-    def next_step(self):
-        selected_option = self.get_option()
-        self.text.setText(f"Continues in: {selected_option}")
 
-        if selected_option in self.window_map:
-            WindowConstructor = self.window_map[selected_option]
-            new_window = WindowConstructor(parent=None) 
-            self.active_windows.append(new_window)
-            new_window.show()
-        elif selected_option == 'Default':
-            pass
+    def open_window(self, constructor, label):
+        if label == "Add Note":
+            new_window = constructor(main_window=self)
         else:
-            self.text.setText("Error: Opción no reconocida.")
-    
+            new_window = constructor(parent=None)
+        self.active_windows.append(new_window)
+        new_window.show()
+
+    def populate_table(self):
+        rows = []
+        for subject, types in df.items():
+            for eval_type, content in types.items():
+                row = (
+                    subject,
+                    eval_type,
+                    str(content.get("ponderacion", "")),
+                    ", ".join(str(n) for n in content.get("notas", []))
+                )
+                rows.append(row)
+
+        self.table.setRowCount(len(rows))
+        for i, row in enumerate(rows):
+            for j, value in enumerate(row):
+                item = QTableWidgetItem(value)
+                item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
+                self.table.setItem(i, j, item)
+
+
 if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv) 
-
-    widget = interface()
-    widget.resize(400, 300)
+    app = QtWidgets.QApplication(sys.argv)
+    widget = Interface()
     widget.show()
-
     sys.exit(app.exec())

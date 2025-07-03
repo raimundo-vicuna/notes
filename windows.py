@@ -3,14 +3,13 @@ from PySide6.QtCore import Qt
 from notas import Notas, df
 
 def getSubjects():
-    subjects = []
-    for i in df.keys():
-        subjects.append(i)
-    return subjects
+    return list(df.keys())
 
 class AddNotaWindow(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, main_window=None, parent=None):
         super().__init__(parent)
+        self.main_window = main_window 
+
         self.setWindowTitle("Añadir Nota")
         self.setGeometry(200, 200, 300, 200)
         
@@ -29,8 +28,6 @@ class AddNotaWindow(QMainWindow):
         self.type_input.addItems(['Pruebas', 'Controles', 'Paes (Only Language)'])
         self.type_input.setFixedWidth(90)
         
-        
-        
         layout = QVBoxLayout(central_widget)
         layout.addWidget(QLabel("Add Note", alignment=Qt.AlignCenter))
         layout.addWidget(self.nota_input)
@@ -42,22 +39,21 @@ class AddNotaWindow(QMainWindow):
         self.save_button.clicked.connect(self.save_note)
 
     def save_note(self):
-        entered_note = self.nota_input.text()
-        entered_note = float(entered_note)
-        
+        try:
+            entered_note = float(self.nota_input.text().replace(",", "."))
+        except ValueError:
+            return 
+
         subject = self.subject_input.currentText()
-        
-        type = self.type_input.currentText().lower()
-        
-        
-        Notas.add_nota(entered_note, subject, type)
-    
-    def getSubjects():
-        subjects = []
-        for i in df.keys():
-            subjects.append(i)
-        return subjects
-    
+        tipo = self.type_input.currentText().split()[0].lower()
+
+        Notas.add_nota(subject, entered_note, tipo)
+
+        if self.main_window:
+            self.main_window.populate_table() 
+
+        self.close()
+
 class ConvertirPuntajeNotaWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
