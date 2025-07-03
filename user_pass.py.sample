@@ -1,0 +1,4 @@
+class user_pass():
+    user_pass = {
+        'username': 'password'
+    }

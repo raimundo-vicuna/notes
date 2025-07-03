@@ -1,4 +1,3 @@
-import json
 from getFile import do
 
 data = do()
