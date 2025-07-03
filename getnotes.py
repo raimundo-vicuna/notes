@@ -1,7 +1,7 @@
 import json
+from getFile import do
 
-with open("notas.json", "r", encoding="utf-8") as f:
-    data = json.load(f)
+data = do()
 
 nombres = data["nombre"]
 eshija = data["eshija"]
