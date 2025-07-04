@@ -1,8 +1,10 @@
 from PySide6.QtWidgets import *
 from PySide6.QtCore import Qt
-from notas import Notas, df
+from core.notas import Notas
+
 
 def getSubjects():
+    df = Notas.df.keys()
     return list(df.keys())
 
 class AddNotaWindow(QMainWindow):

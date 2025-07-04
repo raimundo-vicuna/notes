@@ -5,12 +5,13 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
-from user_pass import user_pass
+from config.user_pass import user_pass
 import json
 import re
 import subprocess
 
 def do():
+    print('se esta ejecutando do')
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--headless=new")

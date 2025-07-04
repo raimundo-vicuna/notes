@@ -1,15 +1,15 @@
 import sys
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtWidgets import (QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton)    
+from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton    
 from PySide6.QtGui import QGuiApplication 
-from windows import (AddNotaWindow, ConvertirPuntajeNotaWindow, GenerarEscalaNotasWindow, CalcularPromedioAsignaturaWindow, CalcularPromedioFinalWindow, CalcularNotaNecesariaWindow)
-from notas import df
-from styles import styles
-
+from app.windows import (AddNotaWindow, ConvertirPuntajeNotaWindow, GenerarEscalaNotasWindow, 
+                     CalcularPromedioAsignaturaWindow, CalcularPromedioFinalWindow, CalcularNotaNecesariaWindow)
+from app.styles import styles
 
 class Interface(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, notas_obj):  # ahora recibe el objeto Notas
         super().__init__()
+        self.notas = notas_obj       # guardamos para usar
         self.setWindowTitle("School Notes")
         screen = QGuiApplication.primaryScreen()
         screen_size = screen.availableGeometry()
@@ -49,7 +49,7 @@ class Interface(QtWidgets.QWidget):
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["Subject", "Type", "Weight", "Grades"])
         self.table.horizontalHeader().setStretchLastSection(True)
-        for i in range(0,5):
+        for i in range(4):  # hay 4 columnas, no 5
             self.table.horizontalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeToContents)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(True)
@@ -74,6 +74,9 @@ class Interface(QtWidgets.QWidget):
 
     def populate_table(self):
         rows = []
+        # Suponiendo que self.notas tiene un atributo o método para obtener datos como el df anterior
+        # Por ejemplo, si en Notas está guardado el diccionario en self.data
+        df = getattr(self.notas, 'data', {})  # O cambia 'data' por el atributo correcto
         for subject, types in df.items():
             for eval_type, content in types.items():
                 row = (
@@ -94,6 +97,16 @@ class Interface(QtWidgets.QWidget):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    widget = Interface()
+    # Para prueba, si quieres un df dummy
+    dummy_data = {
+        "Math": {
+            "tests": {"ponderacion": 40, "notas": [5, 6, 7]},
+            "homeworks": {"ponderacion": 60, "notas": [8, 9]}
+        }
+    }
+    class DummyNotas:
+        def __init__(self, data):
+            self.data = data
+    widget = Interface(DummyNotas(dummy_data))
     widget.show()
     sys.exit(app.exec())
