@@ -10,7 +10,7 @@ import json
 import re
 import subprocess
 
-def do():
+def do(username, password):
     print('se esta ejecutando do')
     options = Options()
     options.add_argument("--headless")
@@ -28,11 +28,16 @@ def do():
     try:
         driver.get("https://schoolnet.colegium.com/webapp/es_CL/login")
         time.sleep(2)
-        username = driver.find_element(By.NAME, "signin[username]")
-        password = driver.find_element(By.NAME, "signin[password]")
-        username.send_keys(list(user_pass.user_pass.keys())[0])
-        password.send_keys(list(user_pass.user_pass.values())[0])
-        password.send_keys(Keys.RETURN)
+        username_field = driver.find_element(By.NAME, "signin[username]")
+        password_field = driver.find_element(By.NAME, "signin[password]")
+
+        user_info = user_pass.user_pass['rai']   # Obtener dict interno
+        username = list(user_info.keys())[0]
+        password = user_info[username]
+
+        username_field.send_keys(username)
+        password_field.send_keys(password)
+        password_field.send_keys(Keys.RETURN)
         time.sleep(4)
         driver.get("https://schoolnet.colegium.com/webapp/es_CL/calificaciones/index?tipocalificacion=nota")
         time.sleep(3)
@@ -43,7 +48,7 @@ def do():
             try:
                 data = json.loads(body_content)
                 return data
-            except json.JSONDecodeError:
-                print('no es un json valido')
+            except Exception as err:
+                raise err
     finally:
         driver.quit()

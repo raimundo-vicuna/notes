@@ -3,13 +3,15 @@ from PySide6 import QtCore, QtWidgets
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton    
 from PySide6.QtGui import QGuiApplication 
 from app.windows import (AddNotaWindow, ConvertirPuntajeNotaWindow, GenerarEscalaNotasWindow, 
-                     CalcularPromedioAsignaturaWindow, CalcularPromedioFinalWindow, CalcularNotaNecesariaWindow)
+                     CalcularPromedioAsignaturaWindow, CalcularNotaNecesariaWindow)
 from app.styles import styles
+from core.notas import Notas
+from PySide6.QtCore import Qt
 
 class Interface(QtWidgets.QWidget):
-    def __init__(self, notas_obj):  # ahora recibe el objeto Notas
+    def __init__(self, notas_obj): 
         super().__init__()
-        self.notas = notas_obj       # guardamos para usar
+        self.notas = notas_obj       
         self.setWindowTitle("School Notes")
         screen = QGuiApplication.primaryScreen()
         screen_size = screen.availableGeometry()
@@ -26,20 +28,34 @@ class Interface(QtWidgets.QWidget):
         self.menu_layout.addWidget(menu_label)
 
         self.button_map = {
-            'Add Note': AddNotaWindow,
-            'Convert Score to Grade': ConvertirPuntajeNotaWindow,
-            'Generate Grade Scale': GenerarEscalaNotasWindow,
-            'Calculate Average (Subject)': CalcularPromedioAsignaturaWindow,
-            'Calculate Final Average': CalcularPromedioFinalWindow,
-            'Calculate Required Grade': CalcularNotaNecesariaWindow,
+        'Add Note': lambda: AddNotaWindow(self.notas, main_window=self),
+        'Convert Score to Grade': lambda: ConvertirPuntajeNotaWindow(self.notas),
+        'Generate Grade Scale': lambda: GenerarEscalaNotasWindow(self.notas),
+        'Calculate Average (Subject)': lambda: CalcularPromedioAsignaturaWindow(self.notas),
+        'Calculate Required Grade': lambda: CalcularNotaNecesariaWindow(self.notas),
         }
+
 
         for label, constructor in self.button_map.items():
             button = QPushButton(label)
             button.clicked.connect(lambda checked, c=constructor, l=label: self.open_window(c, l))
             self.menu_layout.addWidget(button)
-
+        
         self.menu_layout.addStretch(1)
+
+        self.avr_label = QLabel("", alignment=Qt.AlignCenter)
+        self.setAverage()
+        self.avr_label.setAlignment(Qt.AlignCenter)
+        self.avr_label.setStyleSheet("font-size: 15px; font-weight: bold;")
+
+        
+        
+        bottom_layout = QHBoxLayout()
+        bottom_layout.addStretch()
+        bottom_layout.addWidget(self.avr_label)
+        bottom_layout.addStretch()
+
+        self.menu_layout.addLayout(bottom_layout)                
 
         menu_widget = QtWidgets.QWidget()
         menu_widget.setLayout(self.menu_layout)
@@ -49,7 +65,7 @@ class Interface(QtWidgets.QWidget):
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["Subject", "Type", "Weight", "Grades"])
         self.table.horizontalHeader().setStretchLastSection(True)
-        for i in range(4):  # hay 4 columnas, no 5
+        for i in range(4):
             self.table.horizontalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeToContents)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(True)
@@ -65,18 +81,13 @@ class Interface(QtWidgets.QWidget):
         self.active_windows = []
 
     def open_window(self, constructor, label):
-        if label == "Add Note":
-            new_window = constructor(main_window=self)
-        else:
-            new_window = constructor(parent=None)
+        new_window = constructor()
         self.active_windows.append(new_window)
         new_window.show()
 
     def populate_table(self):
         rows = []
-        # Suponiendo que self.notas tiene un atributo o método para obtener datos como el df anterior
-        # Por ejemplo, si en Notas está guardado el diccionario en self.data
-        df = getattr(self.notas, 'data', {})  # O cambia 'data' por el atributo correcto
+        df = getattr(self.notas, 'data', {}) 
         for subject, types in df.items():
             for eval_type, content in types.items():
                 row = (
@@ -93,20 +104,9 @@ class Interface(QtWidgets.QWidget):
                 item = QTableWidgetItem(value)
                 item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
                 self.table.setItem(i, j, item)
-
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    # Para prueba, si quieres un df dummy
-    dummy_data = {
-        "Math": {
-            "tests": {"ponderacion": 40, "notas": [5, 6, 7]},
-            "homeworks": {"ponderacion": 60, "notas": [8, 9]}
-        }
-    }
-    class DummyNotas:
-        def __init__(self, data):
-            self.data = data
-    widget = Interface(DummyNotas(dummy_data))
-    widget.show()
-    sys.exit(app.exec())
+    
+    def setAverage(self):
+            self.avr_label.setText(f'Your Final Average is: {self.notas.calc_promedio_final()}')
+    
+    def closeEvent(self, event):
+        QtWidgets.QApplication.quit()

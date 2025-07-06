@@ -28,9 +28,11 @@ class Notas:
         return round(promedio_final, 1)
 
     def add_nota(self, materia, nota, tipo):
+        if nota > 7:
+            return
         if materia in self.data and tipo in self.data[materia]:
             self.data[materia][tipo]['notas'].append(nota)
-
+    
     def calc_promedio_final(self):
         suma_promedios = 0
         cantidad_asignaturas = 0
@@ -46,7 +48,6 @@ class Notas:
 
         promedio_final = suma_promedios / cantidad_asignaturas
         return round(promedio_final, 1)
-    
     def generar_escala(self, p_max, e, n_min, n_apr, n_max):
         filas = []
         filas.append(f"{'Puntaje':>8} → {'Nota':>4}")
@@ -58,14 +59,12 @@ class Notas:
                 n = (n_max - n_apr) * ((i - e * p_max) / (p_max * (1 - e))) + n_apr
             filas.append(f"{i:8} → {round(n, 1):>4}")
         return filas
-
     def convertir_puntaje_a_nota(self, p, p_max, e, n_min, n_apr, n_max):
         if p < e * p_max:
             n = (n_apr - n_min) * (p / (e * p_max)) + n_min
         else:
             n = (n_max - n_apr) * ((p - e * p_max) / (p_max * (1 - e))) + n_apr
         return round(n, 1)
-    
     def nota_necesaria(self, promedio_esperado, asignatura, tipo):
         datos = self.data.get(asignatura, {})
         if not datos or tipo not in datos:
