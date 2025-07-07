@@ -1,12 +1,15 @@
 from PySide6.QtWidgets import *
-from PySide6.QtCore import Qt
+from PySide6.QtCore import *
 from core.notas import Notas
+from PySide6.QtGui import * 
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 types = ['Pruebas', 'Controles', 'Paes (Only Language)']
 
 def getSubjects(notas_obj):
     return list(notas_obj.data.keys())
-
 
 class AddNotaWindow(QMainWindow):
     def __init__(self, notas_obj, main_window=None, parent=None):
@@ -328,8 +331,7 @@ class CalcularPromedioAsignaturaWindow(QMainWindow):
         subject = self.subject.currentText()
         average = self.notas_obj.calc_promedio(subject)
         self.label.setText(f'The average of {subject} is {average}')
-
-        
+       
 class CalcularNotaNecesariaWindow(QMainWindow):
     def __init__(self, notas_obj, parent=None):
         super().__init__(parent)
@@ -407,9 +409,8 @@ class LoginWindow(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
-
-        users = ['rai', 'New User']
-        
+        from config.user_pass import user_pass
+        users = list(user_pass.user_pass.keys()) + ['New User']
         self.combo = QComboBox()
         self.combo.addItems(users[::-1])
         layout.addWidget(self.combo)

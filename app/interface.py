@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QVBoxLayou
 from PySide6.QtGui import QGuiApplication 
 from app.windows import (AddNotaWindow, ConvertirPuntajeNotaWindow, GenerarEscalaNotasWindow, 
                      CalcularPromedioAsignaturaWindow, CalcularNotaNecesariaWindow)
+from app.graphs import DataAnalysisWindow
 from app.styles import styles
 from core.notas import Notas
 from PySide6.QtCore import Qt
@@ -31,8 +32,8 @@ class Interface(QtWidgets.QWidget):
         'Add Note': lambda: AddNotaWindow(self.notas, main_window=self),
         'Convert Score to Grade': lambda: ConvertirPuntajeNotaWindow(self.notas),
         'Generate Grade Scale': lambda: GenerarEscalaNotasWindow(self.notas),
-        'Calculate Average (Subject)': lambda: CalcularPromedioAsignaturaWindow(self.notas),
         'Calculate Required Grade': lambda: CalcularNotaNecesariaWindow(self.notas),
+        'Get data analysis': lambda: DataAnalysisWindow(self.notas)
         }
 
 
@@ -62,10 +63,10 @@ class Interface(QtWidgets.QWidget):
         menu_widget.setFixedWidth(220)
 
         self.table = QTableWidget()
-        self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(["Subject", "Type", "Weight", "Grades"])
+        self.table.setColumnCount(5)
+        self.table.setHorizontalHeaderLabels(["Subject", "Type", 'Subject Avr', "Weight", "Grades"])
         self.table.horizontalHeader().setStretchLastSection(True)
-        for i in range(4):
+        for i in range(5):
             self.table.horizontalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeToContents)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(True)
@@ -89,10 +90,14 @@ class Interface(QtWidgets.QWidget):
         rows = []
         df = getattr(self.notas, 'data', {}) 
         for subject, types in df.items():
+            subject_avg = self.notas.calc_promedio(subject)
+            subject_avg_str = f"{subject_avg:.1f}" if subject_avg is not None else ""
+
             for eval_type, content in types.items():
                 row = (
                     subject,
                     eval_type,
+                    subject_avg_str,
                     str(content.get("ponderacion", "")),
                     ", ".join(str(n) for n in content.get("notas", []))
                 )
@@ -104,6 +109,7 @@ class Interface(QtWidgets.QWidget):
                 item = QTableWidgetItem(value)
                 item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
                 self.table.setItem(i, j, item)
+
     
     def setAverage(self):
             self.avr_label.setText(f'Your Final Average is: {self.notas.calc_promedio_final()}')

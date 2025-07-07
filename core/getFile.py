@@ -5,24 +5,19 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
-from config.user_pass import user_pass
 import json
 import re
 import subprocess
 
 def do(username, password):
-    print('se esta ejecutando do')
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--headless=new")
-
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-
     service = Service(ChromeDriverManager().install())
     service.creationflags = subprocess.CREATE_NO_WINDOW
     service.startupinfo = startupinfo
-
     driver = webdriver.Chrome(service=service, options=options)
 
     try:
@@ -30,11 +25,6 @@ def do(username, password):
         time.sleep(2)
         username_field = driver.find_element(By.NAME, "signin[username]")
         password_field = driver.find_element(By.NAME, "signin[password]")
-
-        user_info = user_pass.user_pass['rai']   # Obtener dict interno
-        username = list(user_info.keys())[0]
-        password = user_info[username]
-
         username_field.send_keys(username)
         password_field.send_keys(password)
         password_field.send_keys(Keys.RETURN)
