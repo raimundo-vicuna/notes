@@ -4,18 +4,17 @@ from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
 from multiprocessing import Process, Queue
 import os
-
 from app.windows import LoginWindow
 from config.user_pass import user_pass
-from core.getFile import do  # tu función para login con Selenium
+from core.getFile import do 
 from core.getnotes import getNotes
 from core.notas import Notas
 from app.interface import Interface
 from app.loading import Loading
 
-def run_do(queue, username, password):
+def run_do(queue, username, password, period):
     try:
-        data_raw = do(username, password)
+        data_raw = do(username, password, period)
         queue.put({'success': True, 'data': data_raw})
     except Exception as err:
         queue.put({'success': False, 'error': str(err)})
@@ -28,31 +27,39 @@ def main():
 
     login_window = LoginWindow()
     login_window.show()
-    app.exec()  # Para que la ventana se muestre y cierre correctamente
+    app.exec()
 
     option = login_window.login_result
     if not option:
         sys.exit()
+    try:
+        if isinstance(option, str): 
+            if option in user_pass.user_pass:
+                user_info = user_pass.user_pass[option]
+                username = list(user_info.keys())[0]
+                password = user_info[username]
+                period = login_window.period_combo.currentText()
+            else:
+                sys.exit()
 
-    if isinstance(option, str):  # Usuario predefinido
-        if option in user_pass.user_pass:
-            user_info = user_pass.user_pass[option]
-            username = list(user_info.keys())[0]
-            password = user_info[username]
+        elif isinstance(option, list) and len(option) == 3:
+            username, password, period = option
+
         else:
-            print("Usuario no reconocido")
             sys.exit()
+    except Exception:
+        from app.windows import ErrorWindow
+        error = 'Incorrect Username/Password/Period'
+        error_window = ErrorWindow()
+        error_window.getError(error)
+        error_window.show()
+        return
 
-    elif isinstance(option, list) and len(option) == 2:  # Nuevo usuario
-        username, password = option
-    else:
-        print("Credenciales inválidas")
-        sys.exit()
 
     loading = Loading()
     loading.show()
     queue = Queue()
-    process = Process(target=run_do, args=(queue, username, password))
+    process = Process(target=run_do, args=(queue, username, password, period))
     process.start()
     error_window = None
 

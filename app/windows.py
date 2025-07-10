@@ -1,10 +1,6 @@
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
-from core.notas import Notas
 from PySide6.QtGui import * 
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
 
 types = ['Pruebas', 'Controles', 'Paes (Only Language)']
 
@@ -151,7 +147,6 @@ class ConvertirPuntajeNotaWindow(QMainWindow):
     
     def show_grade(self):
         try:
-            print(*self.get_values())
             calculated_grade = self.notas_obj.convertir_puntaje_a_nota(*self.get_values())
             
             self.display_label.setText(f"Grade: {calculated_grade:.1f}")
@@ -396,7 +391,6 @@ class ErrorWindow(QMainWindow):
         main_layout.addWidget(self.closeButton) 
         
     def getError(self, err):
-        print('se abre el dialog de error')
         self.label.setText('An error occurred, please try again.\n' + str(err))
         self.label.show()
 
@@ -404,30 +398,96 @@ class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Login")
-        self.setGeometry(200, 200, 300, 200)
+        self.setGeometry(200, 200, 300, 250)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        layout = QVBoxLayout(central_widget)
+
+        main_layout = QVBoxLayout(central_widget)
+
+        content_layout = QVBoxLayout()
+        content_layout.setSpacing(10)
+        content_layout.setAlignment(Qt.AlignVCenter)
+
+        combo_row = QHBoxLayout()
+
         from config.user_pass import user_pass
-        users = list(user_pass.user_pass.keys()) + ['New User']
+        users = list(user_pass.user_pass.keys()) + ['New User', 'Choose an option']
+
+        user_col = QVBoxLayout()
+        user_label = QLabel("Usuario")
         self.combo = QComboBox()
         self.combo.addItems(users[::-1])
-        layout.addWidget(self.combo)
+        self.combo.currentTextChanged.connect(self.check_new_user)
+        user_col.addWidget(user_label)
+        user_col.addWidget(self.combo)
+        combo_row.addLayout(user_col, 4)
+
+        period_col = QVBoxLayout()
+        period_label = QLabel("Period")
+        self.period_combo = QComboBox()
+        self.period_combo.addItems([str(p) for p in ['Choose an option', 1, 2, '1+2']])
+        period_col.addWidget(period_label)
+        period_col.addWidget(self.period_combo)
+        combo_row.addLayout(period_col, 1)
+
+        content_layout.addLayout(combo_row)
 
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("Nombre")
-        layout.addWidget(self.name_input)
+        self.name_input.setVisible(False)
+        content_layout.addWidget(self.name_input)
 
-        self.user_input = QLineEdit()
-        self.user_input.setPlaceholderText("Usuario")
-        layout.addWidget(self.user_input)
+        self.password_input = QLineEdit()
+        self.password_input.setPlaceholderText("Usuario")
+        self.password_input.setVisible(False)
+        content_layout.addWidget(self.password_input)
+        
+        self.save_checkbox = QCheckBox('Save')
+        self.save_checkbox.setVisible(False)
+        content_layout.addWidget(self.save_checkbox)
+        self.save_checkbox.clicked.connect(self.save_user)
+        
+        self.name_input.textChanged.connect(self.update_login_state)
+        self.password_input.textChanged.connect(self.update_login_state)
+
+        main_layout.addStretch()
+        main_layout.addLayout(content_layout)
+        main_layout.addStretch()
 
         self.login_button = QPushButton("Login")
-        layout.addWidget(self.login_button)
-
+        main_layout.addWidget(self.login_button, alignment=Qt.AlignBottom)
         self.login_button.clicked.connect(self.login_clicked)
+
         self.login_result = None
+
+        self.combo.currentIndexChanged.connect(self.update_login_state)
+        self.period_combo.currentIndexChanged.connect(self.update_login_state)
+        self.update_login_state()
+
+    def update_login_state(self):
+        user_text = self.combo.currentText()
+        period_text = self.period_combo.currentText()
+
+        is_user_selected = user_text != "Choose an option"
+        is_period_selected = period_text != "Choose an option"
+
+        if user_text == "New User":
+            name_filled = bool(self.name_input.text())
+            password_filled = bool(self.password_input.text())
+            self.login_button.setEnabled(is_period_selected and name_filled and password_filled)
+        else:
+            self.login_button.setEnabled(is_user_selected and is_period_selected)
+
+    def check_new_user(self, text):
+        is_new = text == "New User"
+        self.name_input.setVisible(is_new)
+        self.password_input.setVisible(is_new)
+        self.save_checkbox.setVisible(is_new)
+    
+    def save_user():
+        pass
+        #add logic when developing the database
 
     def go(self):
         user = self.combo.currentText()
@@ -435,8 +495,9 @@ class LoginWindow(QMainWindow):
             return user
         else:
             username = self.name_input.text()
-            password = self.user_input.text()
-            return [username, password]
+            password = self.password_input.text()
+            period = self.period_combo.currentText()
+            return [username, password, period]
 
     def login_clicked(self):
         self.login_result = self.go()

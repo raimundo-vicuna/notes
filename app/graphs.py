@@ -1,13 +1,15 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTextEdit
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PySide6.QtGui import QGuiApplication
-from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from app.windows import getSubjects
+from matplotlib.figure import Figure
+
+def getSubjects(notas_obj):
+    return list(notas_obj.data.keys())
 
 class DataAnalysisWindow(QMainWindow):
-    def __init__(self, notas_obj, parent=None):
+    def __init__(self, notas_obj, parent=None): 
         super().__init__(parent)
-        self.notas = notas_obj
+        self.notas = notas_obj       
         self.setWindowTitle("Data Analysis")
         screen = QGuiApplication.primaryScreen()
         screen_size = screen.availableGeometry()
@@ -21,15 +23,15 @@ class DataAnalysisWindow(QMainWindow):
         main_layout = QHBoxLayout(central_widget)
         main_layout.setContentsMargins(40, 40, 40, 40)
 
-        left_layout = QVBoxLayout()
-        left_layout.addWidget(self.buildScatterGraph(), stretch=1)
-        left_layout.addWidget(self.buildBarGraph(), stretch=1)
+        graphs_layout = QVBoxLayout()
+        graphs_layout.addWidget(self.buildScatterGraph(), stretch=1)
+        graphs_layout.addWidget(self.buildBarGraph(), stretch=1)
+        main_layout.addLayout(graphs_layout, stretch=1)
 
-        right_layout = QVBoxLayout()
-        right_layout.addWidget(self.buildAnalysisText(), stretch=2)
-
-        main_layout.addLayout(left_layout, stretch=1)
-        main_layout.addLayout(right_layout, stretch=1)
+        analysis_label = QLabel(self.getAnalysisText())
+        analysis_label.setStyleSheet("color: white; font-size: 14px;")
+        analysis_label.setWordWrap(True)
+        main_layout.addWidget(analysis_label, stretch=2)
 
     def getAverages(self):
         averages = []
@@ -38,6 +40,12 @@ class DataAnalysisWindow(QMainWindow):
             average = round(self.notas.calc_promedio(subject), 1)
             averages.append((subject, average))
         return sorted(averages, key=lambda x: x[1])
+
+    def getXY(self):
+        data = self.getAverages()
+        x = [subject for subject, avg in data]
+        y = [avg for subject, avg in data]
+        return x, y
 
     def buildScatterGraph(self):
         data = self.getAverages()
@@ -50,11 +58,12 @@ class DataAnalysisWindow(QMainWindow):
 
         ax.scatter(x, y, color='cyan', edgecolors='white', s=40)
         ax.set_facecolor('#1e1e1e')
-        ax.set_xticks([])
-        ax.set_yticks(sorted(set(y)))
-        ax.tick_params(axis='y', colors='white')
-        ax.set_ylim(bottom=max(min(y) - 1, 1), top=8)
 
+        ax.set_xticks([])
+        ax.set_yticks([round(v, 1) for v in sorted(set(y))])
+        ax.tick_params(axis='y', colors='white')
+
+        ax.set_ylim(bottom=max(min(y) - 1, 1), top=8)
         fig.tight_layout()
         return canvas
 
@@ -81,64 +90,40 @@ class DataAnalysisWindow(QMainWindow):
         fig.tight_layout()
         return canvas
 
-    def buildAnalysisText(self):
+    def getAnalysisText(self):
         data = self.getAverages()
-        avg_all = round(sum(avg for _, avg in data) / len(data), 1)
+        subject_avgs = {subject: avg for subject, avg in data}
+        lowest_subjects = sorted(subject_avgs.items(), key=lambda x: x[1])[:2]
+        overall_avg = round(sum(subject_avgs.values()) / len(subject_avgs), 1)
 
-        lowest = data[:3]
-        lowest_str = '\n  '.join([f"{subject}: {avg}" for subject, avg in lowest])
+        suggestion_lines = []
+        simulated_impact = []
 
-        # Simulación mejora promedio
-        improvements = []
-        total_subjects = len(data)
-        for subject, avg in data:
-            improved_avg = avg + 0.5 if avg + 0.5 <= 7 else 7  # cap max 7
-            new_total = sum(a for _, a in data) - avg + improved_avg
-            new_prom = round(new_total / total_subjects, 2)
-            diff = round(new_prom - avg_all, 2)
-            improvements.append(f"- Improving {subject} by 0.5 points could raise overall average to {new_prom} (change: {diff:+})")
+        for subject, current_avg in lowest_subjects:
+            improved = round(current_avg + 1, 1)
+            simulated_avgs = subject_avgs.copy()
+            simulated_avgs[subject] = improved
+            new_avg = round(sum(simulated_avgs.values()) / len(simulated_avgs), 1)
+            simulated_impact.append((subject, improved, new_avg))
 
-        recommendations = f"""
-📊 Data Analysis Summary
+            suggestion_lines.append(f"<p style='margin-bottom: 10px;'>📊 <b style='color: #00ffff;'>Overall average:</b> {overall_avg}</p>")
 
-The average performance across all subjects is **{avg_all}**, indicating a generally solid academic standing. However, a few key observations stand out:
+            suggestion_lines.append("<p style='color: #00ffff;'><b>🔍 Observations:</b></p>")
+            suggestion_lines.append("""
+            <ul style='margin-top: 0; margin-bottom: 10px; padding-left: 20px;'>
+                <li>The lowest performing subjects are likely key to improving your overall academic standing.</li>
+                <li>Grades are relatively well distributed, but there's room for improvement at the lower end.</li>
+            </ul>
+            """)
 
-🔍 Key Findings:
+            suggestion_lines.append("<p style='color: #00ffff;'><b>📈 Recommendations:</b></p>")
+            suggestion_lines.append("<ul style='margin-top: 0; margin-bottom: 10px; padding-left: 20px;'>")
+            for subject, new_grade, new_avg in simulated_impact:
+                suggestion_lines.append(
+                    f"<li>If you improve <b>{subject}</b> to <b>{new_grade}</b>, your general average could increase to <b>{new_avg}</b>.</li>"
+                )
+            suggestion_lines.append("</ul>")
 
-- Lowest-performing subjects are likely dragging down the overall average. These include:
-  {lowest_str}
-  These should be considered **critical subjects for improvement**, as even slight progress here can significantly boost the general average.
 
-- Top-performing subjects (grades ≥ 6.7) show strong consistency and suggest mastery in those areas. They are potential academic strengths worth maintaining.
 
-- The distribution of grades shows low variance, indicating consistency in performance.
-
-📈 Recommendations:
-
-1. Focus on improvement in the weakest 3 subjects. 
-   Increasing each by just 0.5 could raise your overall GPA by ~0.2–0.3 points.
-
-2. Maintain strengths in subjects above 6.5.
-
-3. Set micro-goals: aim for 0.2–0.4 point improvements gradually.
-
-4. Monitor trends over time and adjust study strategies accordingly.
-
-💡 Simulation of impact of improving each subject by 0.5 points:
-{chr(10).join(improvements)}
-"""
-
-        text_widget = QTextEdit()
-        text_widget.setReadOnly(True)
-        text_widget.setStyleSheet("""
-            QTextEdit {
-                background-color: #1e1e1e;
-                color: white;
-                font-family: 'Segoe UI', sans-serif;
-                font-size: 14px;
-                border: none;
-                padding: 10px;
-            }
-        """)
-        text_widget.setText(recommendations.strip())
-        return text_widget
+        return "\n".join(suggestion_lines)
