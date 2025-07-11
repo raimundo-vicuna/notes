@@ -106,24 +106,22 @@ class DataAnalysisWindow(QMainWindow):
             new_avg = round(sum(simulated_avgs.values()) / len(simulated_avgs), 1)
             simulated_impact.append((subject, improved, new_avg))
 
-            suggestion_lines.append(f"<p style='margin-bottom: 10px;'>📊 <b style='color: #00ffff;'>Overall average:</b> {overall_avg}</p>")
-
-            suggestion_lines.append("<p style='color: #00ffff;'><b>🔍 Observations:</b></p>")
-            suggestion_lines.append("""
+        suggestion_lines.append(f"<p style='margin-bottom: 10px;'>📊 <b style='color: #00ffff;'>Overall average:</b> {overall_avg}</p>")
+        suggestion_lines.append("<p style='color: #00ffff;'><b>🔍 Observations:</b></p>")
+        suggestion_lines.append("""
             <ul style='margin-top: 0; margin-bottom: 10px; padding-left: 20px;'>
                 <li>The lowest performing subjects are likely key to improving your overall academic standing.</li>
                 <li>Grades are relatively well distributed, but there's room for improvement at the lower end.</li>
             </ul>
-            """)
+        """)
 
-            suggestion_lines.append("<p style='color: #00ffff;'><b>📈 Recommendations:</b></p>")
-            suggestion_lines.append("<ul style='margin-top: 0; margin-bottom: 10px; padding-left: 20px;'>")
-            for subject, new_grade, new_avg in simulated_impact:
-                suggestion_lines.append(
-                    f"<li>If you improve <b>{subject}</b> to <b>{new_grade}</b>, your general average could increase to <b>{new_avg}</b>.</li>"
-                )
-            suggestion_lines.append("</ul>")
-
-
+        suggestion_lines.append("<p style='color: #00ffff;'><b>📈 Recommendations:</b></p>")
+        suggestion_lines.append("<ul style='margin-top: 0; margin-bottom: 10px; padding-left: 20px;'>")
+        for subject, new_grade, new_avg in simulated_impact:
+            suggestion_lines.append(
+                f"<li>If you improve <b>{subject}</b> to <b>{new_grade}</b>, your general average could increase to <b>{new_avg}</b>.</li>"
+            )
+        suggestion_lines.append("</ul>")
 
         return "\n".join(suggestion_lines)
+
