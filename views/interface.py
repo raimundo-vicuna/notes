@@ -2,9 +2,9 @@ import sys
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton    
 from PySide6.QtGui import QGuiApplication 
-from app.windows import (AddNotaWindow, ConvertirPuntajeNotaWindow, GenerarEscalaNotasWindow, 
+from views.windows import (AddNotaWindow, ConvertirPuntajeNotaWindow, GenerarEscalaNotasWindow, 
                      CalcularPromedioAsignaturaWindow, CalcularNotaNecesariaWindow)
-from app.graphs import DataAnalysisWindow
+from views.graphs import DataAnalysisWindow
 from app.styles import styles
 from core.notas import Notas
 from PySide6.QtCore import Qt

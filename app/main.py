@@ -4,13 +4,13 @@ from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
 from multiprocessing import Process, Queue
 import os
-from app.windows import LoginWindow
+from views.windows import LoginWindow
 from config.user_pass import user_pass
 from core.getFile import do 
 from core.getnotes import getNotes
 from core.notas import Notas
-from app.interface import Interface
-from app.loading import Loading
+from views.interface import Interface
+from views.loading import Loading
 
 def run_do(queue, username, password, period):
     try:
@@ -20,6 +20,7 @@ def run_do(queue, username, password, period):
         queue.put({'success': False, 'error': str(err)})
 
 def main():
+    period = ''
     app = QApplication(sys.argv)
     
     icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../assets/icon.png'))
@@ -48,7 +49,7 @@ def main():
         else:
             sys.exit()
     except Exception:
-        from app.windows import ErrorWindow
+        from views.windows import ErrorWindow
         error = 'Incorrect Username/Password/Period'
         error_window = ErrorWindow()
         error_window.getError(error)
@@ -56,7 +57,7 @@ def main():
         return
 
 
-    loading = Loading()
+    loading = Loading(period=period)
     loading.show()
     queue = Queue()
     process = Process(target=run_do, args=(queue, username, password, period))
@@ -78,7 +79,7 @@ def main():
                 interfaz = Interface(notas_obj)
                 interfaz.showMaximized()
             else:
-                from app.windows import ErrorWindow
+                from views.windows import ErrorWindow
                 error_window = ErrorWindow()
                 error_window.getError(result['error'])
                 error_window.show()

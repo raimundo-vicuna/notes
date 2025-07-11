@@ -410,9 +410,11 @@ class LoginWindow(QMainWindow):
         content_layout.setAlignment(Qt.AlignVCenter)
 
         combo_row = QHBoxLayout()
-
+        
+#-------------- Change this part when developing the db-----------------#
         from config.user_pass import user_pass
         users = list(user_pass.user_pass.keys()) + ['New User', 'Choose an option']
+#-----------------------------------------------------------------------#
 
         user_col = QVBoxLayout()
         user_label = QLabel("Usuario")
@@ -427,6 +429,7 @@ class LoginWindow(QMainWindow):
         period_label = QLabel("Period")
         self.period_combo = QComboBox()
         self.period_combo.addItems([str(p) for p in ['Choose an option', 1, 2, '1+2']])
+        
         period_col.addWidget(period_label)
         period_col.addWidget(self.period_combo)
         combo_row.addLayout(period_col, 1)
@@ -490,9 +493,11 @@ class LoginWindow(QMainWindow):
         #add logic when developing the database
 
     def go(self):
+#-------------- Change this part when developing the db-----------------#
         user = self.combo.currentText()
         if user != 'New User':
             return user
+#-----------------------------------------------------------------------#
         else:
             username = self.name_input.text()
             password = self.password_input.text()
