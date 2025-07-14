@@ -1,0 +1,33 @@
+digraph "packages_SchoolNet" {
+rankdir=BT
+charset="utf-8"
+"app" [color="black", label=<app>, shape="box", style="solid"];
+"app.main" [color="black", label=<app.main>, shape="box", style="solid"];
+"app.styles" [color="black", label=<app.styles>, shape="box", style="solid"];
+"config" [color="black", label=<config>, shape="box", style="solid"];
+"config.object.test" [color="black", label=<config.object.test>, shape="box", style="solid"];
+"config.user_pass" [color="black", label=<config.user_pass>, shape="box", style="solid"];
+"core" [color="black", label=<core>, shape="box", style="solid"];
+"core.getFile" [color="black", label=<core.getFile>, shape="box", style="solid"];
+"core.getnotes" [color="black", label=<core.getnotes>, shape="box", style="solid"];
+"core.notas" [color="black", label=<core.notas>, shape="box", style="solid"];
+"run" [color="black", label=<run>, shape="box", style="solid"];
+"views" [color="black", label=<views>, shape="box", style="solid"];
+"views.graphs" [color="black", label=<views.graphs>, shape="box", style="solid"];
+"views.interface" [color="black", label=<views.interface>, shape="box", style="solid"];
+"views.loading" [color="black", label=<views.loading>, shape="box", style="solid"];
+"views.windows" [color="black", label=<views.windows>, shape="box", style="solid"];
+"app.main" -> "config.user_pass" [arrowhead="open", arrowtail="none"];
+"app.main" -> "core.getFile" [arrowhead="open", arrowtail="none"];
+"app.main" -> "core.getnotes" [arrowhead="open", arrowtail="none"];
+"app.main" -> "core.notas" [arrowhead="open", arrowtail="none"];
+"app.main" -> "views.interface" [arrowhead="open", arrowtail="none"];
+"app.main" -> "views.loading" [arrowhead="open", arrowtail="none"];
+"app.main" -> "views.windows" [arrowhead="open", arrowtail="none"];
+"run" -> "app.main" [arrowhead="open", arrowtail="none"];
+"views.interface" -> "app.styles" [arrowhead="open", arrowtail="none"];
+"views.interface" -> "core.notas" [arrowhead="open", arrowtail="none"];
+"views.interface" -> "views.graphs" [arrowhead="open", arrowtail="none"];
+"views.interface" -> "views.windows" [arrowhead="open", arrowtail="none"];
+"views.windows" -> "config.user_pass" [arrowhead="open", arrowtail="none"];
+}

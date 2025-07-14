@@ -1,16 +1,20 @@
+import os
 import sys
+from multiprocessing import Process, Queue
+
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
-from multiprocessing import Process, Queue
-import os
+
 from views.windows import LoginWindow
-from config.user_pass import user_pass
-from core.getFile import do 
-from core.getnotes import getNotes
-from core.notas import Notas
 from views.interface import Interface
 from views.loading import Loading
+
+from config.user_pass import user_pass
+from core.getFile import do
+from core.getnotes import getNotes
+from core.notas import Notas
+
 
 def run_do(queue, username, password, period):
     try:

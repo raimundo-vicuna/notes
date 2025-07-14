@@ -5,3 +5,4 @@ env/
 notas.json
 user_pass.py
 object.test.py
+__init__.py
