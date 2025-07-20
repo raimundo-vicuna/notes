@@ -1,13 +1,11 @@
-import sys
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton    
 from PySide6.QtGui import QGuiApplication 
-from views.windows import (AddNotaWindow, ConvertirPuntajeNotaWindow, GenerarEscalaNotasWindow, 
-                     CalcularPromedioAsignaturaWindow, CalcularNotaNecesariaWindow)
+from views.windows import (AddNotaWindow, ConvertirPuntajeNotaWindow, GenerarEscalaNotasWindow, CalcularNotaNecesariaWindow)
 from views.graphs import DataAnalysisWindow
-from app.styles import styles
-from core.notas import Notas
+from assets.styles.styles import styles
 from PySide6.QtCore import Qt
+from views.paes import PaesWindow
 
 class Interface(QtWidgets.QWidget):
     def __init__(self, notas_obj): 
@@ -33,7 +31,8 @@ class Interface(QtWidgets.QWidget):
         'Convert Score to Grade': lambda: ConvertirPuntajeNotaWindow(self.notas),
         'Generate Grade Scale': lambda: GenerarEscalaNotasWindow(self.notas),
         'Calculate Required Grade': lambda: CalcularNotaNecesariaWindow(self.notas),
-        'Get data analysis': lambda: DataAnalysisWindow(self.notas)
+        'Get data analysis': lambda: DataAnalysisWindow(self.notas),
+        'Paes': PaesWindow
         }
 
 

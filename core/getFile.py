@@ -9,6 +9,7 @@ import json
 import re
 import subprocess
 
+
 def do(username, password, period):
     options = Options()
     options.add_argument("--headless")
@@ -61,3 +62,4 @@ def do(username, password, period):
                     raise err
     finally:
         driver.quit()
+
