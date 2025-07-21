@@ -14,12 +14,18 @@ from config.user_pass import user_pass
 from core.getFile import do
 from core.getnotes import getNotes
 from core.notas import Notas
+from core.getClassmates import getClassmates
+from core.classmates import Classmates
 
 
 def run_do(queue, username, password, period):
     try:
-        data_raw = do(username, password, period)
-        queue.put({'success': True, 'data': data_raw})
+        resultado = do(username, password, period)
+        queue.put({
+            'success': True,
+            'notas': resultado['data'],
+            'classmates': resultado['classmates']
+        })
     except Exception as err:
         queue.put({'success': False, 'error': str(err)})
 
@@ -37,6 +43,7 @@ def main():
     option = login_window.login_result
     if not option:
         sys.exit()
+
     try:
         if isinstance(option, str): 
             if option in user_pass.user_pass:
@@ -46,10 +53,8 @@ def main():
                 period = login_window.period_combo.currentText()
             else:
                 sys.exit()
-
         elif isinstance(option, list) and len(option) == 3:
             username, password, period = option
-
         else:
             sys.exit()
     except Exception:
@@ -59,7 +64,6 @@ def main():
         error_window.getError(error)
         error_window.show()
         return
-
 
     loading = Loading(period=period)
     loading.show()
@@ -76,11 +80,21 @@ def main():
             loading.close()
 
             if result.get('success'):
-                data_raw = result['data']
-                datos = getNotes(data_raw)
+                data_raw = result['notas']
+                datos = {}
+
+                for key, value in data_raw.items():
+                    datos.update(getNotes(value))
+
                 notas_obj = Notas(datos)
 
-                interfaz = Interface(notas_obj)
+                classmates = result.get('classmates')
+                classmates_obj = None
+                if classmates:
+                    classmates_obj = Classmates(getClassmates(classmates))
+
+                    
+                interfaz = Interface(notas_obj, classmates_obj)
                 interfaz.showMaximized()
             else:
                 from views.windows import ErrorWindow

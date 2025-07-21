@@ -6,11 +6,13 @@ from views.graphs import DataAnalysisWindow
 from assets.styles.styles import styles
 from PySide6.QtCore import Qt
 from views.paes import PaesWindow
+from views.classmates import ClassmatesWindow
 
 class Interface(QtWidgets.QWidget):
-    def __init__(self, notas_obj): 
+    def __init__(self, notas_obj, classmates): 
         super().__init__()
-        self.notas = notas_obj       
+        self.notas = notas_obj
+        self.classmates = classmates
         self.setWindowTitle("School Notes")
         screen = QGuiApplication.primaryScreen()
         screen_size = screen.availableGeometry()
@@ -32,7 +34,8 @@ class Interface(QtWidgets.QWidget):
         'Generate Grade Scale': lambda: GenerarEscalaNotasWindow(self.notas),
         'Calculate Required Grade': lambda: CalcularNotaNecesariaWindow(self.notas),
         'Get data analysis': lambda: DataAnalysisWindow(self.notas),
-        'Paes': PaesWindow
+        'Paes': PaesWindow,
+        'Classmates': lambda: ClassmatesWindow(self.classmates),
         }
 
 
