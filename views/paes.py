@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (
-     QWidget, QVBoxLayout, QFormLayout, 
+    QWidget, QVBoxLayout, QFormLayout,
     QLineEdit, QPushButton, QLabel, QMessageBox
 )
 from core.calcPaes import Paes
@@ -9,7 +9,7 @@ class PaesWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        self.setWindowTitle("Calculadora de Puntaje Ponderado")
+        self.setWindowTitle("Weighted Score Calculator")
         self.setStyleSheet(styles)
         
         layout = QVBoxLayout()
@@ -22,17 +22,17 @@ class PaesWindow(QWidget):
         self.m2_input = QLineEdit()
         self.historia_ciencias_input = QLineEdit()
 
-        form_layout.addRow("Puntaje NEM:", self.nem_input)
-        form_layout.addRow("Puntaje Ranking:", self.ranking_input)
-        form_layout.addRow("PAES Comprensión Lectora:", self.lectura_input)
-        form_layout.addRow("PAES Competencia Matemática M1:", self.m1_input)
-        form_layout.addRow("PAES Competencia Matemática M2:", self.m2_input)
-        form_layout.addRow("PAES Historia o Ciencias:", self.historia_ciencias_input)
+        form_layout.addRow("NEM Score:", self.nem_input)
+        form_layout.addRow("Ranking Score:", self.ranking_input)
+        form_layout.addRow("PAES Reading Comprehension:", self.lectura_input)
+        form_layout.addRow("PAES Math Competency M1:", self.m1_input)
+        form_layout.addRow("PAES Math Competency M2:", self.m2_input)
+        form_layout.addRow("PAES History or Science:", self.historia_ciencias_input)
 
-        self.calculate_button = QPushButton("Calcular Puntaje")
+        self.calculate_button = QPushButton("Calculate Score")
         self.calculate_button.clicked.connect(self.calculate_score)
 
-        self.result_label = QLabel("Tu puntaje ponderado es: ")
+        self.result_label = QLabel("Your weighted score is: ")
 
         layout.addLayout(form_layout)
         layout.addWidget(self.calculate_button)
@@ -50,6 +50,6 @@ class PaesWindow(QWidget):
             historia_ciencias = float(self.historia_ciencias_input.text())
 
             puntaje = Paes().calcScore(nem, ranking, lectura, m1, m2, historia_ciencias)
-            self.result_label.setText(f"Tu puntaje ponderado es: {puntaje:.2f}")
+            self.result_label.setText(f"Your weighted score is: {puntaje:.2f}")
         except ValueError:
-            QMessageBox.warning(self, "Error", "Por favor, ingrese valores numéricos válidos.")
+            QMessageBox.warning(self, "Error", "Please enter valid numeric values.")

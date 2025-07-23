@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import * 
-
+from core.notas import Notas
 types = ['Pruebas', 'Controles', 'Paes (Only Language)']
 
 def getSubjects(notas_obj):
@@ -64,6 +64,56 @@ class AddNotaWindow(QMainWindow):
             self.main_window.setAverage()
 
         self.close()
+
+class popNoteWindow(QMainWindow):
+    def __init__(self, notas_obj, main_window=None, parent=None):
+        super().__init__(parent)
+        self.main_window = main_window 
+        self.notas_obj = notas_obj
+        self.main_window = main_window
+        
+        self.setWindowTitle('Remove Note')
+        self.setGeometry(200, 200, 400, 300)
+        
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        
+        self.nota_input = QLineEdit(self)
+        self.nota_input.setPlaceholderText("Note")
+        self.nota_input.setFixedWidth(50)
+        
+        self.subject_input = QComboBox(self)
+        self.subject_input.addItems(getSubjects(notas_obj))
+        self.subject_input.setFixedWidth(150)
+        
+        self.type_input = QComboBox(self)
+        self.type_input.addItems(types)
+        self.type_input.setFixedWidth(90)
+        
+        self.label = QLabel("Remove Note", alignment=Qt.AlignCenter)
+        
+        layout = QVBoxLayout(central_widget)
+        layout.addWidget(self.label)
+        layout.addWidget(self.nota_input)
+        layout.addWidget(self.subject_input)
+        layout.addWidget(self.type_input)
+
+        self.save_button = QPushButton("Save Note", self)
+        layout.addWidget(self.save_button)
+        
+        try:
+            entered_note = float(self.nota_input.text().replace(",", "."))
+        except ValueError:
+            return 
+        
+        subject = self.subject_input.currentText()
+        tipo = self.type_input.currentText().split()[0].lower()
+
+        
+        self.save_button.clicked.connect(Notas.quit_note(subject, entered_note, tipo))
+
+    
+
 
 class ConvertirPuntajeNotaWindow(QMainWindow):
     def __init__(self, notas_obj, parent=None):

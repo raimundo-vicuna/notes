@@ -33,6 +33,12 @@ class Notas:
         if materia in self.data and tipo in self.data[materia]:
             self.data[materia][tipo]['notas'].append(nota)
     
+    def quit_note(self, materia, nota, tipo):
+        if materia == '':
+            return
+        if materia in self.data and tipo in self.data[materia]:
+            self.data[materia][tipo]['notas'].pop(nota)
+            
     def calc_promedio_final(self):
         suma_promedios = 0
         cantidad_asignaturas = 0

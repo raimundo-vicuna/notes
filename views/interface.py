@@ -1,6 +1,6 @@
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton    
-from PySide6.QtGui import QGuiApplication 
+from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton
+from PySide6.QtGui import QGuiApplication, QIcon
 from views.windows import (AddNotaWindow, ConvertirPuntajeNotaWindow, GenerarEscalaNotasWindow, CalcularNotaNecesariaWindow)
 from views.graphs import DataAnalysisWindow
 from assets.styles.styles import styles
@@ -40,10 +40,29 @@ class Interface(QtWidgets.QWidget):
 
 
         for label, constructor in self.button_map.items():
-            button = QPushButton(label)
-            button.clicked.connect(lambda checked, c=constructor, l=label: self.open_window(c, l))
-            self.menu_layout.addWidget(button)
-        
+            if label == 'Add Note':
+                row_layout = QHBoxLayout()
+
+                button = QPushButton(label)
+                button.clicked.connect(lambda checked, c=constructor, l=label: self.open_window(c, l))
+
+                delete_button = QPushButton()
+                delete_icon = QIcon('assets/icons/return.png')
+                delete_button.setIcon(delete_icon)
+                delete_button.setToolTip("Delete Note")
+                delete_button.clicked.connect()
+
+                row_layout.addWidget(button, stretch=9)
+                row_layout.addWidget(delete_button, stretch=1)
+
+                self.menu_layout.addLayout(row_layout)
+
+            else:
+                button = QPushButton(label)
+                button.clicked.connect(lambda checked, c=constructor, l=label: self.open_window(c, l))
+                self.menu_layout.addWidget(button)
+
+
         self.menu_layout.addStretch(1)
 
         self.avr_label = QLabel("", alignment=Qt.AlignCenter)
